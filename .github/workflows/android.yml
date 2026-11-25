@@ -25,7 +25,26 @@ jobs:
 
       - name: Extract project
         run: unzip -q SomeoneGPT-Android-GitHub.zip
-
+      - name: Fix JVM target compatibility
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path("SomeoneGPT-Android/app/build.gradle.kts")
+          s = p.read_text()
+          s = s.replace(
+              "android {",
+              """android {
+              compileOptions {
+                  sourceCompatibility = JavaVersion.VERSION_17
+                  targetCompatibility = JavaVersion.VERSION_17
+              }
+              kotlinOptions {
+                  jvmTarget = "17"
+              }""",
+              1
+          )
+          p.write_text(s)
+          PY
       - name: Build APK
         run: gradle -p SomeoneGPT-Android :app:assembleDebug
 
